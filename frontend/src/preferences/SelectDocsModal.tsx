@@ -28,13 +28,13 @@ export default function APIKeyModal({
   const [isError, setIsError] = useState(false);
 
   function handleSubmit() {
-    if (!localSelectedDocs) {
+  //  if (!localSelectedDocs) {
   //    setIsError(true);
-    } else {
+ //   } else {
       dispatch(setSelectedDocs(localSelectedDocs));
       setModalState('INACTIVE');
       setIsError(false);
-    }
+ //   }
   }
 
   function handleCancel() {
