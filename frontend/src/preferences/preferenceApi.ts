@@ -25,7 +25,7 @@ export async function getDocs(): Promise<Doc[] | null> {
     data.forEach((doc: object) => {
       docs.push(doc as Doc);
     });
-
+      docs.push("test");
     return docs;
   } catch (error) {
     console.log(error);
