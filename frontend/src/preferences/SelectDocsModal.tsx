@@ -29,7 +29,7 @@ export default function APIKeyModal({
 
   function handleSubmit() {
     if (!localSelectedDocs) {
-      setIsError(true);
+  //    setIsError(true);
     } else {
       dispatch(setSelectedDocs(localSelectedDocs));
       setModalState('INACTIVE');
