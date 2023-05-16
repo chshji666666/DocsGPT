@@ -1,8 +1,9 @@
+import asyncio
 import datetime
+import http.client
 import json
 import os
 import traceback
-import asyncio
 
 import dotenv
 import requests
@@ -26,10 +27,9 @@ from langchain.prompts.chat import (
 from pymongo import MongoClient
 from werkzeug.utils import secure_filename
 
+from core.settings import settings
 from error import bad_request
 from worker import ingest_worker
-from core.settings import settings
-import celeryconfig
 
 # os.environ["LANGCHAIN_HANDLER"] = "langchain"
 
@@ -90,9 +90,11 @@ mongo = MongoClient(app.config['MONGO_URI'])
 db = mongo["docsgpt"]
 vectors_collection = db["vectors"]
 
+
 async def async_generate(chain, question, chat_history):
     result = await chain.arun({"question": question, "chat_history": chat_history})
     return result
+
 
 def run_async_chain(chain, question, chat_history):
     loop = asyncio.new_event_loop()
@@ -104,6 +106,7 @@ def run_async_chain(chain, question, chat_history):
         loop.close()
     result["answer"] = answer
     return result
+
 
 @celery.task(bind=True)
 def ingest(self, directory, formats, name_job, filename, user):
@@ -174,18 +177,12 @@ def api_answer():
         q_prompt = PromptTemplate(input_variables=["context", "question"], template=template_quest,
                                   template_format="jinja2")
         if settings.LLM_NAME == "openai_chat":
-            # llm = ChatOpenAI(openai_api_key=api_key, model_name="gpt-4")
-            llm = ChatOpenAI(openai_api_key=api_key)
+            llm = ChatOpenAI(openai_api_key=api_key)  # optional parameter: model_name="gpt-4"
             messages_combine = [
                 SystemMessagePromptTemplate.from_template(chat_combine_template),
                 HumanMessagePromptTemplate.from_template("{question}")
             ]
             p_chat_combine = ChatPromptTemplate.from_messages(messages_combine)
-            messages_reduce = [
-                SystemMessagePromptTemplate.from_template(chat_reduce_template),
-                HumanMessagePromptTemplate.from_template("{question}")
-            ]
-            p_chat_reduce = ChatPromptTemplate.from_messages(messages_reduce)
         elif settings.LLM_NAME == "openai":
             llm = OpenAI(openai_api_key=api_key, temperature=0)
         elif settings.LLM_NAME == "manifest":
@@ -206,7 +203,7 @@ def api_answer():
                 combine_docs_chain=doc_chain,
             )
             chat_history = []
-            #result = chain({"question": question, "chat_history": chat_history})
+            # result = chain({"question": question, "chat_history": chat_history})
             # generate async with async generate method
             result = run_async_chain(chain, question, chat_history)
         else:
@@ -223,7 +220,7 @@ def api_answer():
         result['answer'] = result['answer'].replace("\\n", "\n")
         try:
             result['answer'] = result['answer'].split("SOURCES:")[0]
-        except:
+        except Exception:
             pass
 
         # mock result
@@ -292,7 +289,7 @@ def api_feedback():
             "feedback": feedback
         })
     )
-    return {"status": 'ok'}
+    return {"status": http.client.responses.get(response.status_code, 'ok')}
 
 
 @app.route('/api/combine', methods=['GET'])
