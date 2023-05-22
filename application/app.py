@@ -175,7 +175,8 @@ def api_answer():
                                   template_format="jinja2")
         if settings.LLM_NAME == "openai_chat":
             # llm = ChatOpenAI(openai_api_key=api_key, model_name="gpt-4")
-            llm = ChatOpenAI(openai_api_key=api_key)
+            llm = ChatOpenAI(openai_api_key=api_key, model_name="gpt-3.5-turbo")
+            #llm = ChatOpenAI(openai_api_key=api_key)
             messages_combine = [
                 SystemMessagePromptTemplate.from_template(chat_combine_template),
                 HumanMessagePromptTemplate.from_template("{question}")
@@ -198,17 +199,29 @@ def api_answer():
             raise ValueError("unknown LLM model")
 
         if settings.LLM_NAME == "openai_chat":
-            question_generator = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
-            doc_chain = load_qa_chain(llm, chain_type="map_reduce", combine_prompt=p_chat_combine)
+     #       question_generator = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
+     #       doc_chain = load_qa_chain(llm, chain_type="map_reduce", combine_prompt=p_chat_combine)
+     #       chain = ConversationalRetrievalChain(
+     #           retriever=docsearch.as_retriever(k=2),
+     #           question_generator=question_generator,
+     #           combine_docs_chain=doc_chain,
+     #       )
+     #       chat_history = []
+     #       #result = chain({"question": question, "chat_history": chat_history})
+     #       # generate async with async generate method
+     #       result = run_async_chain(chain, question, chat_history)
+
+            question_generator = LLMChain(llm=llm, prompt=p_chat_combine)
+            doc_chain = load_qa_chain(llm, chain_type="stuff", prompt=p_chat_combine,
+                                          document_variable_name="summaries")
             chain = ConversationalRetrievalChain(
-                retriever=docsearch.as_retriever(k=2),
-                question_generator=question_generator,
-                combine_docs_chain=doc_chain,
+                    retriever=docsearch.as_retriever(k=2),
+                    question_generator=question_generator,
+                    combine_docs_chain=doc_chain,
             )
             chat_history = []
-            #result = chain({"question": question, "chat_history": chat_history})
-            # generate async with async generate method
             result = run_async_chain(chain, question, chat_history)
+
         else:
             qa_chain = load_qa_chain(llm=llm, chain_type="map_reduce",
                                      combine_prompt=c_prompt, question_prompt=q_prompt)

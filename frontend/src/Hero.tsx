@@ -2,21 +2,16 @@ export default function Hero({ className = '' }: { className?: string }) {
   return (
     <div className={`flex flex-col ${className}`}>
       <div className="mb-10 flex items-center justify-center">
-        <p className="mr-2 text-4xl font-semibold">DocsGPT</p>
-        <p className="text-[27px]">🦖</p>
+              <p className="mr-2 text-4xl font-semibold">专有知识库聊天机器人</p>
+        <p className="text-[27px]">(vantoo)</p>
       </div>
       <p className="mb-3 text-center leading-6 text-black-1000">
-        Welcome to DocsGPT, your technical documentation assistant!
+        欢迎使用基于专有知识库的聊天机器人!
       </p>
       <p className="mb-3 text-center leading-6 text-black-1000">
-        Enter a query related to the information in the documentation you
-        selected to receive and we will provide you with the most relevant
-        answers.
+        输入基于知识库内容的相关问题，通过gpt的大语言模型能力，为你提供最佳答案
       </p>
-      <p className="mb-3 text-center leading-6 text-black-1000">
-        Start by entering your query in the input field below and we will do the
-        rest!
-      </p>
+      
     </div>
   );
 }

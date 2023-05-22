@@ -132,8 +132,7 @@ export default function Conversation() {
           )}
         </div>
         <p className="w-[100vw] self-center bg-white p-5 text-center text-xs text-gray-2000">
-          This is a chatbot that uses the GPT-3, Faiss and LangChain to answer
-          questions.
+          基于 GPT-3.5, Faiss , LangChain 构建的专有知识库聊天机器人
         </p>
       </div>
     </div>

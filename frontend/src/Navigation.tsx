@@ -197,8 +197,9 @@ export default function Navigation({
               </div>
             )}
           </div>
-          <p className="ml-6 mt-3 font-bold text-jet">Source Docs</p>
-        </div>
+          <p className="ml-6 mt-3 font-bold text-jet">专有知识库</p>
+              </div>
+              {/*
         <div className="flex flex-col gap-2 border-b-2 py-2">
           <div
             className="my-auto mx-4 flex h-12 cursor-pointer gap-4 rounded-md hover:bg-gray-100"
@@ -209,7 +210,7 @@ export default function Navigation({
             <img src={Key} alt="key" className="ml-2 w-6" />
             <p className="my-auto text-eerie-black">Reset Key</p>
           </div>
-        </div>
+              </div>  */}
 
         <div className="flex flex-col gap-2 border-b-2 py-2">
           <NavLink
@@ -221,20 +222,20 @@ export default function Navigation({
             }
           >
             <img src={Info} alt="info" className="ml-2 w-5" />
-            <p className="my-auto text-eerie-black">About</p>
+            <p className="my-auto text-eerie-black">关于</p>
           </NavLink>
 
           <a
-            href="https://discord.gg/WHJdfbQDR4"
+                      href="https://qun.qq.com/qqweb/qunpro/share?_wv=3&_wwv=128&appChannel=share&inviteCode=208ySzsw81s&businessType=9&from=181074&biz=ka&mainSourceId=share&subSourceId=others&jumpsource=shorturl#/out"
             target="_blank"
             rel="noreferrer"
             className="my-auto mx-4 flex h-12 cursor-pointer gap-4 rounded-md hover:bg-gray-100"
           >
             <img src={Link} alt="link" className="ml-2 w-5" />
-            <p className="my-auto text-eerie-black">Discord</p>
+            <p className="my-auto text-eerie-black">QQ频道</p>
           </a>
 
-          <a
+                  {/* <a
             href="https://github.com/arc53/DocsGPT"
             target="_blank"
             rel="noreferrer"
@@ -242,7 +243,7 @@ export default function Navigation({
           >
             <img src={Link} alt="link" className="ml-2 w-5" />
             <p className="my-auto text-eerie-black">Github</p>
-          </a>
+                  </a> */}
         </div>
       </div>
       <div className="fixed h-16 w-full border-b-2 bg-gray-50 md:hidden">
