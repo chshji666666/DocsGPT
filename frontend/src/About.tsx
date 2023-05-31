@@ -25,7 +25,7 @@ export default function About() {
         <p>
                   如果需要保证数据安全，进行私有化部署，或者定制开发可以联系
                   QQ:250508212
-                  电话/微信:13860403312
+                  微信:vantoo2014
         </p>
       </article>
     </div>
