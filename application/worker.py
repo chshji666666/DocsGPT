@@ -1,18 +1,17 @@
-import requests
-import nltk
 import os
-
-from parser.file.bulk import SimpleDirectoryReader
-from parser.schema.base import Document
-from parser.open_ai_func import call_openai_api
-from parser.token_func import group_split
-from urllib.parse import urljoin
-from core.settings import settings
-
-
+import shutil
 import string
 import zipfile
-import shutil
+from urllib.parse import urljoin
+
+import nltk
+import requests
+
+from core.settings import settings
+from parser.file.bulk import SimpleDirectoryReader
+from parser.open_ai_func import call_openai_api
+from parser.schema.base import Document
+from parser.token_func import group_split
 
 try:
     nltk.download('punkt', quiet=True)
@@ -20,6 +19,8 @@ try:
 except FileExistsError:
     pass
 
+def metadata_from_filename(title):
+    return {'title': title}
 
 def generate_random_string(length):
     return ''.join([string.ascii_letters[i % 52] for i in range(length)])
@@ -50,7 +51,7 @@ def ingest_worker(self, directory, formats, name_job, filename, user):
     with open(full_path + '/' + filename, 'wb') as f:
         f.write(file)
 
-    #check if file is .zip and extract it
+    # check if file is .zip and extract it
     if filename.endswith('.zip'):
         with zipfile.ZipFile(full_path + '/' + filename, 'r') as zip_ref:
             zip_ref.extractall(full_path)
@@ -60,7 +61,7 @@ def ingest_worker(self, directory, formats, name_job, filename, user):
 
     raw_docs = SimpleDirectoryReader(input_dir=full_path, input_files=input_files, recursive=recursive,
                                      required_exts=formats, num_files_limit=limit,
-                                     exclude_hidden=exclude).load_data()
+                                     exclude_hidden=exclude, file_metadata=metadata_from_filename).load_data()
     raw_docs = group_split(documents=raw_docs, min_tokens=min_tokens, max_tokens=max_tokens, token_check=token_check)
 
     docs = [Document.to_langchain_format(raw_doc) for raw_doc in raw_docs]
@@ -68,7 +69,7 @@ def ingest_worker(self, directory, formats, name_job, filename, user):
     call_openai_api(docs, full_path, self)
     self.update_state(state='PROGRESS', meta={'current': 100})
 
-    if sample == True:
+    if sample:
         for i in range(min(5, len(raw_docs))):
             print(raw_docs[i].text)
 

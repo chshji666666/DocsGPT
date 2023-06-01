@@ -1,21 +1,20 @@
 import os
 import sys
-import nltk
-import dotenv
-import typer
-
 from collections import defaultdict
 from typing import List, Optional
 
-from parser.file.bulk import SimpleDirectoryReader
-from parser.schema.base import Document
-from parser.open_ai_func import call_openai_api, get_user_permission
-from parser.py2doc import transform_to_docs
-from parser.py2doc import extract_functions_and_classes as extract_py
-from parser.js2doc import extract_functions_and_classes as extract_js
-from parser.java2doc import extract_functions_and_classes as extract_java
-from parser.token_func import group_split
+import dotenv
+import nltk
+import typer
 
+from parser.file.bulk import SimpleDirectoryReader
+from parser.java2doc import extract_functions_and_classes as extract_java
+from parser.js2doc import extract_functions_and_classes as extract_js
+from parser.open_ai_func import call_openai_api, get_user_permission
+from parser.py2doc import extract_functions_and_classes as extract_py
+from parser.py2doc import transform_to_docs
+from parser.schema.base import Document
+from parser.token_func import group_split
 
 dotenv.load_dotenv()
 
@@ -25,28 +24,32 @@ nltk.download('punkt', quiet=True)
 nltk.download('averaged_perceptron_tagger', quiet=True)
 
 
-#Splits all files in specified folder to documents
+def metadata_from_filename(title):
+    return {'title': title}
+
+# Splits all files in specified folder to documents
 @app.command()
 def ingest(yes: bool = typer.Option(False, "-y", "--yes", prompt=False,
-                                                   help="Whether to skip price confirmation"),
+                                    help="Whether to skip price confirmation"),
            dir: Optional[List[str]] = typer.Option(["inputs"],
                                                    help="""List of paths to directory for index creation.
                                                         E.g. --dir inputs --dir inputs2"""),
            file: Optional[List[str]] = typer.Option(None,
-                                                   help="""File paths to use (Optional; overrides dir).
+                                                    help="""File paths to use (Optional; overrides dir).
                                                         E.g. --file inputs/1.md --file inputs/2.md"""),
            recursive: Optional[bool] = typer.Option(True, help="Whether to recursively search in subdirectories."),
            limit: Optional[int] = typer.Option(None, help="Maximum number of files to read."),
            formats: Optional[List[str]] = typer.Option([".rst", ".md"],
-                                                   help="""List of required extensions (list with .)
-                                                        Currently supported: .rst, .md, .pdf, .docx, .csv, .epub, .html, .mdx"""),
+                                                       help="""List of required extensions (list with .)
+                                                        Currently supported: 
+                                                        .rst, .md, .pdf, .docx, .csv, .epub, .html, .mdx"""),
            exclude: Optional[bool] = typer.Option(True, help="Whether to exclude hidden files (dotfiles)."),
-           sample: Optional[bool] = typer.Option(False, help="Whether to output sample of the first 5 split documents."),
+           sample: Optional[bool] = typer.Option(False,
+                                                 help="Whether to output sample of the first 5 split documents."),
            token_check: Optional[bool] = typer.Option(True, help="Whether to group small documents and split large."),
            min_tokens: Optional[int] = typer.Option(150, help="Minimum number of tokens to not group."),
            max_tokens: Optional[int] = typer.Option(2000, help="Maximum number of tokens to not split."),
            ):
-
     """
         Creates index from specified location or files.
         By default /inputs folder is used, .rst and .md are parsed.
@@ -55,22 +58,22 @@ def ingest(yes: bool = typer.Option(False, "-y", "--yes", prompt=False,
     def process_one_docs(directory, folder_name):
         raw_docs = SimpleDirectoryReader(input_dir=directory, input_files=file, recursive=recursive,
                                          required_exts=formats, num_files_limit=limit,
-                                         exclude_hidden=exclude).load_data()
+                                         exclude_hidden=exclude, file_metadata=metadata_from_filename).load_data()
 
         # Here we split the documents, as needed, into smaller chunks.
         # We do this due to the context limits of the LLMs.
-        raw_docs = group_split(documents=raw_docs, min_tokens=min_tokens, max_tokens=max_tokens, token_check=token_check)
-        #Old method
+        raw_docs = group_split(documents=raw_docs, min_tokens=min_tokens, max_tokens=max_tokens,
+                               token_check=token_check)
+        # Old method
         # text_splitter = RecursiveCharacterTextSplitter()
         # docs = text_splitter.split_documents(raw_docs)
 
-        #Sample feature
-        if sample == True:
+        # Sample feature
+        if sample:
             for i in range(min(5, len(raw_docs))):
                 print(raw_docs[i].text)
 
         docs = [Document.to_langchain_format(raw_doc) for raw_doc in raw_docs]
-
 
         # Here we check for command line arguments for bot calls.
         # If no argument exists or the yes is not True, then the
@@ -98,12 +101,11 @@ def ingest(yes: bool = typer.Option(False, "-y", "--yes", prompt=False,
 
 @app.command()
 def convert(dir: Optional[str] = typer.Option("inputs",
-                                                   help="""Path to directory to make documentation for.
+                                              help="""Path to directory to make documentation for.
                                                         E.g. --dir inputs """),
             formats: Optional[str] = typer.Option("py",
-                                                        help="""Required language. 
+                                                  help="""Required language. 
                                                         py, js, java supported for now""")):
-
     """
             Creates documentation linked to original functions from specified location.
             By default /inputs folder is used, .py is parsed.
@@ -117,7 +119,7 @@ def convert(dir: Optional[str] = typer.Option("inputs",
     else:
         raise Exception("Sorry, language not supported yet")
     transform_to_docs(functions_dict, classes_dict, formats, dir)
+
+
 if __name__ == "__main__":
-  app()
-
-
+    app()
